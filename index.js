@@ -39,12 +39,13 @@ async function connectToWhatsApp() {
         // Menyimpan kredensial
         sock.ev.on('creds.update', saveCreds);
 
-        // Menjaga koneksi tetap aktif dengan ping
+        // Menjaga koneksi tetap aktif dengan ping alternatif
         setInterval(() => {
-            if (sock?.ws) {
-                sock.ws.ping();
+            if (sock?.ws?.readyState === 1) { // Cek apakah websocket aktif
+                sock.sendPresenceUpdate('available'); // Kirim status 'available' untuk menjaga koneksi
+                console.log('Sent keep-alive signal to WhatsApp');
             }
-        }, 10000); // Ping setiap 10 detik
+        }, 10000); // Kirim setiap 10 detik
     } catch (err) {
         console.error('Failed to connect to WhatsApp:', err);
     }
