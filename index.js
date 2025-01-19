@@ -75,7 +75,7 @@ async function connectToWhatsApp() {
 })();
 
 // Menjalankan server pada port yang dinamis
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 app.listen(PORT, () => {
     connectToWhatsApp();
     console.log(`Server is running on port ${PORT}`);
