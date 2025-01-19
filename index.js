@@ -18,11 +18,20 @@ async function connectToWhatsApp() {
         // Event handler untuk update koneksi
         sock.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect } = update;
-
+        
             if (connection === 'close') {
-                const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
-                console.log('Connection closed due to', lastDisconnect?.error, ', reconnecting', shouldReconnect);
-
+                const error = lastDisconnect?.error;
+                const statusCode = error?.output?.statusCode;
+        
+                console.log('Connection closed due to', error?.message || 'unknown reason', ', reconnecting', statusCode !== DisconnectReason.loggedOut);
+        
+                if (statusCode === 440) {
+                    console.log('Stream error detected (conflict). Clearing authentication state...');
+                    // Hapus kredensial yang disimpan jika ada konflik
+                    await sock?.logout();
+                }
+        
+                const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
                 if (shouldReconnect) {
                     await connectToWhatsApp();
                 }
@@ -30,6 +39,7 @@ async function connectToWhatsApp() {
                 console.log('Connected to WhatsApp');
             }
         });
+        
 
         // Event handler untuk error
         sock.ev.on('error', (err) => {
